@@ -8,8 +8,6 @@ from sqlalchemy import func
 
 from app.models import Transaction
 
-# Initialize Groq client (using OpenAI-compatible SDK)
-# Groq provides high-speed Llama models for free/low cost
 try:
     groq_key = os.getenv("GROQ_API_KEY")
     if groq_key:
@@ -29,21 +27,18 @@ def generate_financial_insights(db: Session, user_id: str) -> Dict[str, Any]:
             "error": "No AI API key found. Please check your .env file."
         }
 
-    # 1. Gather User Context from DB
     transactions = db.query(Transaction).filter(Transaction.user_id == user_id).all()
     if not transactions:
         return {"error": "No transactions found for user to analyze."}
 
     total_spend = sum(t.amount for t in transactions if t.amount > 0)
     
-    # Aggregate spending by category
     categories = {}
     for t in transactions:
         cat = t.category or "Others"
         if t.amount > 0:
             categories[cat] = categories.get(cat, 0) + t.amount
 
-    # Collect anomalies (High risk)
     anomalies = [
         {
             "description": t.description,
@@ -55,7 +50,6 @@ def generate_financial_insights(db: Session, user_id: str) -> Dict[str, Any]:
         for t in transactions if getattr(t, 'is_anomaly', False) and t.anomaly_score is not None and t.anomaly_score >= 45
     ]
 
-    # 2. Construct the Prompt
     prompt = f"""
     You are 'Vortex', an expert proactive AI financial assistant. Provide actionable insights.
     
@@ -78,8 +72,6 @@ def generate_financial_insights(db: Session, user_id: str) -> Dict[str, Any]:
     """
 
     try:
-        # Use Groq's super-fast Llama-3.3-70b/3.1-8b model
-        # llama-3.3-70b-versatile is excellent for complex reasoning
         model_name = "llama-3.3-70b-versatile" if os.getenv("GROQ_API_KEY") else "gpt-4o"
         
         response = client.chat.completions.create(
