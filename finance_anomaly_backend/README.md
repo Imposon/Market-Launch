@@ -4,7 +4,7 @@ AI-powered anomaly detection engine for personal bank transactions.
 
 ## Tech Stack
 
-- **Python 3.11+** / **FastAPI** / **Pydantic v2**
+- **Python 3.11+** / **Pydantic v2**
 - **SQLAlchemy** + **SQLite** (swap-in Postgres for production)
 - **Scikit-learn** (Isolation Forest) / **Pandas** / **NumPy**
 - **pdfplumber** (PDF bank statement parsing)
